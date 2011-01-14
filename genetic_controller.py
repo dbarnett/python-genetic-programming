@@ -2,7 +2,7 @@ from inspect import getargspec
 import random
 import copy
 import matplotlib.pyplot as plt
-import matplotlib.__version__
+import matplotlib
 #from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
