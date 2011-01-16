@@ -4,11 +4,11 @@ import copy
 import types
 import matplotlib.pyplot as plt
 import matplotlib
-#from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
 import numpy as np
 
+import mpl_toolkits.mplot3d.axes3d      # register 3d projection
 
 class GeneticController(object):
     def __init__(self):
@@ -331,8 +331,9 @@ class GeneticController(object):
 
             fig.colorbar(surf, shrink=0.5, aspect=5)
 
-        except Exception:
+        except Exception, e:
             print 'need matplotlib version 1 or greater. you have version ' + matplotlib.__version__
+            raise
 
         t = range(0,len(self.average_fitness))
 
