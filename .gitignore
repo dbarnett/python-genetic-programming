@@ -1,0 +1,3 @@
+*.pyc
+.*.sw[a-p]
+genetic_programming.egg-info/
