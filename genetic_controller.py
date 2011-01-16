@@ -11,14 +11,15 @@ import numpy as np
 import mpl_toolkits.mplot3d.axes3d      # register 3d projection
 
 class GeneticController(object):
+    M           = 500   # Population size
+    G           = 50    # Maximum number of generations
+
     def __init__(self):
 
 # 6.9 Control parameters
 # {
     # 19 control parameters
     # 2 major numerical parameters
-        self.M          = 500   # Population size
-        self.G          = 50    # Maximum number of generations
 
     # 11 minor numerical parameters
         self.p_c        = .90   # Probability of crossover

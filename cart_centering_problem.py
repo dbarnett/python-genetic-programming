@@ -2,10 +2,11 @@ from genetic_controller import GeneticController, Genome
 import random
 
 class CartController(GeneticController):
+    M = 500
+    G = 20
+
     def __init__(self):
         GeneticController.__init__(self)
-        self.M = 500
-        self.G = 20
     
         # Terminal set
         self.T = ['x','v',-1]
