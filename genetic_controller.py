@@ -68,10 +68,7 @@ class GeneticController(object):
         X = np.arange(0, self.G, 1) # gen
         Y = np.arange(0, 201, 10) # fitness
         self.X, self.Y = np.meshgrid(X, Y)
-        self.Z = [0]*self.G
-        #for i in range(self.G):
-        #    self.Z[i] = 20 # asdfsafdsafsafd
-
+        self.Z = []
 
     def wrapper(self, arg):
         """return arg unless overrided by subclass"""
@@ -166,11 +163,8 @@ class GeneticController(object):
             self.total_adjusted_fitness[self.generation] += self.a(i,self.generation) #
 
         hist, edges = np.histogram([round(self.s(i,self.generation)) for i in range(self.M)], bins = 21, range=(0,200))
-        #self.Z[self.generation], edges = np.histogram([round(self.s(i,self.generation)) for i in range(self.M)], bins = 20, range=(0,200))
-        self.Z[self.generation] = list(hist)
+        self.Z.append(list(hist))
         print hist
-        #for i in range(len(hist)):
-        #    self.Z[self.generation][i] = hist[i]
 
 # 6.3 Fitness
 # {
@@ -318,11 +312,9 @@ class GeneticController(object):
             fig = plt.figure()
             ax = fig.gca(projection='3d')
 
-            self.Z = np.array(self.Z)
-            self.Z = self.Z.transpose()
-            #self.Z = self.X
+            Z = np.array(self.Z).transpose()
 
-            surf = ax.plot_surface(self.X, self.Y, self.Z, rstride=1, cstride=1, cmap=cm.jet,
+            surf = ax.plot_surface(self.X, self.Y, Z, rstride=1, cstride=1, cmap=cm.jet,
                     linewidth=0, antialiased=False)
             ax.set_zlim3d(-1.01, 1.01)
 
