@@ -1,6 +1,7 @@
 from inspect import getargspec
 import random
 import copy
+import types
 import matplotlib.pyplot as plt
 import matplotlib
 #from mpl_toolkits.mplot3d import Axes3D
@@ -9,7 +10,7 @@ from matplotlib.ticker import LinearLocator, FixedLocator, FormatStrFormatter
 import numpy as np
 
 
-class GeneticController:
+class GeneticController(object):
     def __init__(self):
 
 # 6.9 Control parameters
@@ -47,7 +48,6 @@ class GeneticController:
 # }
 
     # Other variables
-        self.function_type = type(getargspec)
         self.generation = 0
         self.current_generation = []
         self.next_generation = []
@@ -79,7 +79,7 @@ class GeneticController:
 
     def is_function(self, possible_function):
         # Considered a terminal if arity == 0
-        if type(possible_function) == self.function_type and len(getargspec(possible_function)[0]) > 0:
+        if isinstance(possible_function, types.FunctionType) and len(getargspec(possible_function)[0]) > 0:
             return True
         return False
 
@@ -348,7 +348,7 @@ class GeneticController:
         plt.show()
 
 
-class Genome:
+class Genome(object):
     def __init__(self):
         self.nodes = []
         self.function_nodes = []
@@ -373,7 +373,7 @@ class Genome:
         return self.first_node.run()
 
     def __eq__(self, other):
-        return self.__repr__() == other.__repr__()
+        return repr(self) == repr(other)
         #if len(self.nodes) != len(other.nodes) or \
         #len(self.terminal_nodes) != len(other.terminal_nodes) or \
         #len(self.function_nodes) != len(other.function_nodes):
@@ -381,12 +381,13 @@ class Genome:
         #return self.first_node == other.first_node
 
     def __str__(self):
-        return self.__repr__()
+        return repr(self)
+
     def __repr__(self):
-        return self.first_node.__repr__()
+        return repr(self.first_node)
 
 
-class GenomeNode:
+class GenomeNode(object):
     def __init__(self, container):
         self.container = container
         self.children = []
@@ -411,22 +412,17 @@ class GenomeNode:
         self.container.nodes.append(child)
 
     def interpret_terminal(self):
-        #if type(self.terminal) == str:
-        #    return locals()[self.terminal]
-        #elif type(self.terminal) == int:
-        #    return self.terminal
+        if isinstance(self.terminal, str):
+            #return locals()[self.terminal]
+            return self.container.actual_args.get(self.terminal)
+        elif isinstance(self.terminal, int):
+            return self.terminal
         #else:
         #    return self.terminal()
-        if type(self.terminal) == str:
-            return self.container.actual_args.get(self.terminal)
-        elif type(self.terminal) == int:
-            return self.terminal
         
     def run(self):
         if self.is_function():
-            args = []
-            for child in self.children:
-                args.append(child.run())
+            args = [child.run() for child in self.children]
             return self.function(*args)
         else:
             return self.interpret_terminal()
@@ -451,10 +447,9 @@ class GenomeNode:
         else:
             return '(' + str(self.terminal) + ')'
 
-class Organism:
+class Organism(object):
     def __init__(self, genome):
         self.genome = genome
-        #import pdb; pdb.set_trace()
         #self.wrapper = locals()['wrapper']
         self.raw_fitness = None
         #self.hits = None
