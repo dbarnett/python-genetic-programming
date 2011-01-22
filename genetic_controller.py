@@ -12,7 +12,7 @@ import mpl_toolkits.mplot3d.axes3d      # register 3d projection
 
 class GeneticController(object):
     M           = 500   # Population size
-    G           = 50    # Maximum number of generations
+    G           = 51    # Maximum number of generations
 
     def __init__(self):
 
@@ -57,6 +57,7 @@ class GeneticController(object):
         self.average_fitness = [None] * self.G
         self.best_fitness = [None] * self.G
         self.total_adjusted_fitness = [0] * self.G
+        self.lower_raw_fitness_is_better = False            # what to set default value
 
     # Statistics
         self.n_best_of_population = 10
@@ -65,10 +66,12 @@ class GeneticController(object):
         self.best_of_generation = []
         # histogram
 
-    # 3d graph
-        X = np.arange(0, self.G, 1) # gen
-        Y = np.arange(0, 201, 10) # fitness
-        self.X, self.Y = np.meshgrid(X, Y)
+    def init_3d_graph(self):
+        #self.bins -= 1 # just the way things work out
+        self.X = np.arange(0, self.G, 1) # gen
+        self.Y = []
+                #np.arange(0, self.r_max, float(self.r_max/self.bins)) # fitness
+        #self.X, self.Y = np.meshgrid(X, Y)
         self.Z = []
 
     def wrapper(self, arg):
@@ -163,7 +166,12 @@ class GeneticController(object):
                     self.best_fitness[self.generation] = self.s(i)
             self.total_adjusted_fitness[self.generation] += self.a(i,self.generation) #
 
-        hist, edges = np.histogram([round(self.s(i,self.generation)) for i in range(self.M)], bins = 21, range=(0,200))
+        hist, edges = np.histogram([round(self.s(i,self.generation)) for i in range(self.M)], bins = self.bins, range=(0,self.r_max))
+        if self.Y == []:
+            for i in range(len(hist)):
+                self.Y.append( (edges[i]+edges[i+1])/2. )
+        print edges
+        #self.Z[self.generation], edges = np.histogram([round(self.s(i,self.generation)) for i in range(self.M)], bins = 20, range=(0,200))
         self.Z.append(list(hist))
         print hist
 
@@ -178,9 +186,9 @@ class GeneticController(object):
     def s(self, i, t=None):
         """Standardized Fitness
            Adjustment for raw fitness so a lower fitness is always better."""
-        if self.r_max:
-            return self.r_max - self.r(i,t)
-        return self.r(i,t)
+        if self.lower_raw_fitness_is_better:
+            return self.r(i,t)        
+        return self.r_max - self.r(i,t)
 
     def a(self, i, t=None):
         """Adjusted Fitness
@@ -310,14 +318,16 @@ class GeneticController(object):
 
     def display_fitness_curves(self):
         try:
+            X, Y = np.meshgrid(self.X, self.Y)
+
             fig = plt.figure()
             ax = fig.gca(projection='3d')
 
             Z = np.array(self.Z).transpose()
 
-            surf = ax.plot_surface(self.X, self.Y, Z, rstride=1, cstride=1, cmap=cm.jet,
+            surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=cm.jet,
                     linewidth=0, antialiased=False)
-            ax.set_zlim3d(-1.01, 1.01)
+            #ax.set_zlim3d(-1.01, 1.01)
 
             ax.w_zaxis.set_major_locator(LinearLocator(10))
             ax.w_zaxis.set_major_formatter(FormatStrFormatter('%.03f'))
@@ -330,11 +340,11 @@ class GeneticController(object):
 
         t = range(0,len(self.average_fitness))
 
-        l_worst, = plt.plot(t, self.worst_fitness, 'g-o')
-        l_average, = plt.plot(t, self.average_fitness, 'b-D')
-        l_best, = plt.plot(t, self.best_fitness, 'r-s')
+        #l_worst, = plt.plot(t, self.worst_fitness, 'g-o')
+        #l_average, = plt.plot(t, self.average_fitness, 'b-D')
+        #l_best, = plt.plot(t, self.best_fitness, 'r-s')
 
-        plt.legend( (l_worst, l_average, l_best), ('worst', 'average', 'best'), 'upper right', shadow=True)
+        #plt.legend( (l_worst, l_average, l_best), ('worst', 'average', 'best'), 'upper right', shadow=True)
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
         plt.title('Fitness Curves')
@@ -445,7 +455,7 @@ class Organism(object):
     def __init__(self, genome):
         self.genome = genome
         #self.wrapper = locals()['wrapper']
-        self.raw_fitness = None
+        self.raw_fitness = 0
         #self.hits = None
         self.hits = 0
     def run(self, *args):
