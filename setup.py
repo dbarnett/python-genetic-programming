@@ -5,7 +5,7 @@ setup(
     version = "0.01",
     packages=find_packages(),
     dependency_links = [],
-    install_requires=['matplotlib>=1'],
+    install_requires=['matplotlib>=1', 'wxPython'],
     extras_require={},
     package_data = {},
     author= "Timothy Barnett",
