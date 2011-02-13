@@ -11,7 +11,7 @@ import numpy as np
 import mpl_toolkits.mplot3d.axes3d      # register 3d projection
 
 class GeneticController(object):
-    M           = 500   # Population size
+    M           = 4000   # Population size
     G           = 51    # Maximum number of generations
 
     def __init__(self):
@@ -50,12 +50,13 @@ class GeneticController(object):
 
     # Other variables
         self.generation = 0
+        self.individual = None
         self.current_generation = []
         self.next_generation = []
         self.r_max = None
-        self.worst_fitness = [None] * self.G
-        self.average_fitness = [None] * self.G
-        self.best_fitness = [None] * self.G
+        self.worst_fitness = []
+        self.average_fitness = []
+        self.best_fitness = []
         self.total_adjusted_fitness = [0] * self.G
         self.lower_raw_fitness_is_better = False            # what to set default value
 
@@ -131,15 +132,17 @@ class GeneticController(object):
             return self.grow(genome,depth)
 
     def build_initial_structures(self):
-        i = 0
-        while i < self.M:
+        self.individual = 0
+        while self.individual < self.M:
             genome = Genome()
             genome.first_node = self.generative_method(genome)
             if not self.has_duplicate(genome):
                 self.next_generation.append(Organism(genome))
-                i += 1
+                self.individual += 1
         self.current_generation = copy.deepcopy(self.next_generation)
+        #print self.current_generation
         self.next_generation = []
+        self.individual = None
 
 # }
 
@@ -152,12 +155,13 @@ class GeneticController(object):
 
     def test_generation(self):
         for i in range(self.M):
+            self.individual = i
             print self.generation, '\t', i
             self.test_organism(self.current_generation[i])
             if i == 0:
-                self.worst_fitness[self.generation] = self.s(i)
-                self.average_fitness[self.generation] = self.s(i)
-                self.best_fitness[self.generation] = self.s(i)
+                self.worst_fitness.append(self.s(i))
+                self.average_fitness.append(self.s(i))
+                self.best_fitness.append(self.s(i))
             else:
                 self.average_fitness[self.generation] = (self.average_fitness[self.generation] * i + self.s(i)) / (i+1)
                 if self.s(i) > self.worst_fitness[self.generation]:
@@ -170,10 +174,13 @@ class GeneticController(object):
         if self.Y == []:
             for i in range(len(hist)):
                 self.Y.append( (edges[i]+edges[i+1])/2. )
-        print edges
         #self.Z[self.generation], edges = np.histogram([round(self.s(i,self.generation)) for i in range(self.M)], bins = 20, range=(0,200))
         self.Z.append(list(hist))
         print hist
+        self.individual = None
+        self.generation += 1
+        #for i in range(len(hist)):
+        #    self.Z[self.generation][i] = hist[i]
 
 # 6.3 Fitness
 # {
@@ -206,7 +213,7 @@ class GeneticController(object):
            n(i,t) = ---------------------------------
                      sum of a(k,t) for k from 0 to M
         """
-        return self.a(i,t) / self.total_adjusted_fitness[self.generation]
+        return self.a(i,t) / self.total_adjusted_fitness[self.generation-1]
 
 # }
 
@@ -257,7 +264,6 @@ class GeneticController(object):
             self.make_child()
         self.current_generation = copy.deepcopy(self.next_generation)
         self.next_generation = []
-        self.generation += 1
 
 # 6.4 Primary Operations For Modifying Structures
 # {

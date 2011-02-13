@@ -1,5 +1,6 @@
 from genetic_controller import GeneticController, Genome
 import random
+from hal import hal
 
 """
 Terminal set:   state variables x and v
@@ -7,8 +8,8 @@ Function set:   + - * % ABS GT
 """
 
 class CartController(GeneticController):
-    M = 50
-    G = 5
+    M = 100
+    G = 20
 
     def __init__(self):
         GeneticController.__init__(self)
@@ -62,6 +63,9 @@ def ABS(a): # cannot use abs because getargspec is weird with built-in functions
     return abs(a)
 
 if __name__ == '__main__':
+    hal(CartController)
+    """
     cc = CartController()
     cc.test_all_generations()
     cc.display_fitness_curves()
+    """
